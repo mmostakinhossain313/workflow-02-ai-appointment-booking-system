@@ -1,0 +1,240 @@
+{
+  "name": "Workflow 02 AI Appointment Booking System",
+  "nodes": [
+    {
+      "parameters": {
+        "pollTimes": {
+          "item": [
+            {
+              "mode": "everyMinute"
+            }
+          ]
+        },
+        "documentId": {
+          "__rl": true,
+          "value": "1PgSsSLrGQan63axL4nAuGt1XDt4m1min0QMGxYwAfB0",
+          "mode": "list",
+          "cachedResultName": "AI Appointment Booking System (Responses)",
+          "cachedResultUrl": "https://docs.google.com/spreadsheets/d/1PgSsSLrGQan63axL4nAuGt1XDt4m1min0QMGxYwAfB0/edit?usp=drivesdk"
+        },
+        "sheetName": {
+          "__rl": true,
+          "value": 1032915496,
+          "mode": "list",
+          "cachedResultName": "Form Responses 1",
+          "cachedResultUrl": "https://docs.google.com/spreadsheets/d/1PgSsSLrGQan63axL4nAuGt1XDt4m1min0QMGxYwAfB0/edit#gid=1032915496"
+        },
+        "event": "rowAdded",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.googleSheetsTrigger",
+      "typeVersion": 1,
+      "position": [
+        -432,
+        0
+      ],
+      "id": "f5d4a6a3-e602-4bdf-aa69-95c87a83a1a1",
+      "name": "Google Sheets Trigger",
+      "credentials": {
+        "googleSheetsTriggerOAuth2Api": {
+          "id": "oWLZtsTXLWr3PNY2",
+          "name": "Google Sheets Trigger OAuth2 API"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "modelId": {
+          "__rl": true,
+          "value": "gpt-4o-mini",
+          "mode": "list",
+          "cachedResultName": "GPT-4O-MINI"
+        },
+        "responses": {
+          "values": [
+            {
+              "content": "=You are an appointment assistant.\n\nReview the appointment request and create a short professional summary.\n\nInclude:\n\n* Customer Name\n* Service Requested\n* Appointment Date\n* Appointment Time\n\nKeep the response short and easy to read.\n\nCustomer Name: {{$json[\"Full Name\"]}}\n\nEmail: {{$json[\"Email\"]}}\n\nPhone Number: {{$json[\"Phone Number\"]}}\n\nAppointment Date: {{$json[\"Appointment Date\"]}}\n\nAppointment Time: {{$json[\"Appointment Time\"]}}\n\nService Required: {{$json[\"Service Required\"]}}\n"
+            }
+          ]
+        },
+        "builtInTools": {},
+        "options": {}
+      },
+      "type": "@n8n/n8n-nodes-langchain.openAi",
+      "typeVersion": 2.3,
+      "position": [
+        -304,
+        0
+      ],
+      "id": "f9955d25-e1de-4953-a472-6fdeaf4e3151",
+      "name": "Message a model",
+      "credentials": {
+        "openAiApi": {
+          "id": "qkmcSIWhxRW61AM1",
+          "name": "OpenAI account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "calendar": {
+          "__rl": true,
+          "value": "mostakinhossain89@gmail.com",
+          "mode": "list",
+          "cachedResultName": "mostakinhossain89@gmail.com"
+        },
+        "additionalFields": {
+          "summary": "={{ $('Google Sheets Trigger').item.json['Full Name'] }}"
+        }
+      },
+      "type": "n8n-nodes-base.googleCalendar",
+      "typeVersion": 1.3,
+      "position": [
+        -48,
+        0
+      ],
+      "id": "f56c5f6f-e6c5-4c6b-a8e0-53e88dff0cc2",
+      "name": "Create an event",
+      "credentials": {
+        "googleCalendarOAuth2Api": {
+          "id": "lTlEQXFSBNdwTrk9",
+          "name": "Google Calendar OAuth2 API"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "chatId": "1200648760",
+        "text": "=📅 New Appointment Request\n\n👤 Customer: {{$node[\"Google Sheets Trigger\"].json[\"Full Name\"]}}\n\n📧 Email: {{$node[\"Google Sheets Trigger\"].json[\"Email\"]}}\n\n📱 Phone: {{$node[\"Google Sheets Trigger\"].json[\"Phone Number\"]}}\n\n🗓 Date: {{$node[\"Google Sheets Trigger\"].json[\"Appointment Date\"]}}\n\n⏰ Time: {{$node[\"Google Sheets Trigger\"].json[\"Appointment Time\"]}}\n\n🛠 Service: {{$node[\"Google Sheets Trigger\"].json[\"Service Required\"]}}\n\n✅ Appointment added to calendar.",
+        "additionalFields": {
+          "appendAttribution": false
+        }
+      },
+      "type": "n8n-nodes-base.telegram",
+      "typeVersion": 1.2,
+      "position": [
+        80,
+        0
+      ],
+      "id": "744ce378-5d31-46e5-a4c1-5690323d043e",
+      "name": "Send a text message",
+      "webhookId": "de76d64e-99bd-4f7d-9792-75586aa11eb8",
+      "credentials": {
+        "telegramApi": {
+          "id": "qV5fSLbX8Zjt733B",
+          "name": "Telegram account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "sendTo": "={{ $('Create an event').item.json.organizer.email }}",
+        "subject": "Appointment Confirmation – Thank You for Your Booking",
+        "message": "=Hello \n{{$node[\"Google Sheets Trigger\"].json[\"Full Name\"]}},\n\nThank you for booking an appointment with us.\n\nWe have successfully received your appointment request. Below are your appointment details:\n\n📅 Appointment Date: {{$node[\"Google Sheets Trigger\"].json[\"Appointment Date\"]}}\n\n⏰ Appointment Time: {{$node[\"Google Sheets Trigger\"].json[\"Appointment Time\"]}}\n\n🛠 Service Requested: {{$node[\"Google Sheets Trigger\"].json[\"Service Required\"]}}\n\nOur team will review your request and contact you if any additional information is needed.\n\nIf you need to make any changes to your appointment, please reply to this email.\n\nWe appreciate your time and look forward to speaking with you.\n\nBest regards,\n\nAppointment Team\n",
+        "options": {
+          "appendAttribution": false
+        }
+      },
+      "type": "n8n-nodes-base.gmail",
+      "typeVersion": 2.2,
+      "position": [
+        208,
+        0
+      ],
+      "id": "4a9e175c-1719-47da-a5a9-fc989c6870ab",
+      "name": "Send a message",
+      "webhookId": "45ca52b9-8d02-4713-85c5-a72224bebd56",
+      "credentials": {
+        "gmailOAuth2": {
+          "id": "6stsBcdkO41pX8Kq",
+          "name": "Gmail OAuth2 API"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "amount": 1,
+        "unit": "minutes"
+      },
+      "type": "n8n-nodes-base.wait",
+      "typeVersion": 1.1,
+      "position": [
+        320,
+        0
+      ],
+      "id": "1cfb84fb-1f5e-4b0f-8902-a1bba6cf9902",
+      "name": "Wait",
+      "webhookId": "069c6015-e453-4b49-b38a-5bd04c3f9a9a"
+    }
+  ],
+  "pinData": {},
+  "connections": {
+    "Google Sheets Trigger": {
+      "main": [
+        [
+          {
+            "node": "Message a model",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Message a model": {
+      "main": [
+        [
+          {
+            "node": "Create an event",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Create an event": {
+      "main": [
+        [
+          {
+            "node": "Send a text message",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Send a text message": {
+      "main": [
+        [
+          {
+            "node": "Send a message",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Send a message": {
+      "main": [
+        [
+          {
+            "node": "Wait",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  },
+  "active": true,
+  "settings": {
+    "executionOrder": "v1",
+    "binaryMode": "separate"
+  },
+  "versionId": "e89eab42-f657-4a90-981c-b26d818ea8c4",
+  "meta": {
+    "templateCredsSetupCompleted": true,
+    "instanceId": "f2f23a593b5262fad10e7ebf366e5500ddfd99f99fc69ff6bdb831511c19c666"
+  },
+  "id": "G0HVEdYspFPr8pOA",
+  "tags": []
+}
