@@ -174,11 +174,11 @@ Dashboard Reporting
 
 ### Telegram Notification
 
-![Telegram Notification](screenshots/06-telegram-notification.png)
+![Telegram Notification](screenshots/06-telegram-notification.jpeg)
 
 ### Confirmation Email
 
-![Confirmation Email](screenshots/07-confirmation-email.png)
+![Confirmation Email](screenshots/07-confirmation-email.jpeg)
 
 ---
 
